@@ -7,14 +7,17 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,6 +53,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Toolbar
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -103,7 +110,6 @@ class MainActivity : AppCompatActivity() {
         // --- Listeners ---
         seekbarBaseDuration.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // Snap to 100ms steps
                 val snapped = (progress / 100) * 100
                 tvBaseDurationValue.text = "$snapped ms"
             }
@@ -147,6 +153,52 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    // --- Toolbar overflow menu ---
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_contribute -> {
+                showContributeDialog()
+                true
+            }
+            R.id.menu_big_thank_you -> {
+                showBigThankYouDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun showContributeDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Contribute")
+            .setMessage(
+                "Pinyin Toast 是一個開源專案。\n\n" +
+                "歡迎提交 Bug 回報、功能建議或 Pull Request！\n\n" +
+                "感謝你的支持 ❤️"
+            )
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showBigThankYouDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Big Thank You! 🎉")
+            .setMessage(
+                "感謝使用 Pinyin Toast！\n\n" +
+                "這個 App 的誕生離不開以下資源：\n" +
+                "• pinyin4j 拼音轉換庫\n" +
+                "• Android Accessibility Service API\n\n" +
+                "最重要的是，感謝你 — 使用者！"
+            )
+            .setPositiveButton("😊", null)
+            .show()
+    }
+
     override fun onResume() {
         super.onResume()
         updateServiceStatus()
@@ -155,10 +207,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateServiceStatus() {
         if (isAccessibilityServiceEnabled(this, PinyinService::class.java)) {
-            tvStatus.text = "已啟用 ✔"
+            tvStatus.text = "授權狀態：已啟用 ✔"
             tvStatus.setTextColor(resources.getColor(R.color.accent_green, null))
         } else {
-            tvStatus.text = "未啟用 ✘"
+            tvStatus.text = "授權狀態：未啟用 ✘"
             tvStatus.setTextColor(resources.getColor(R.color.accent_red, null))
         }
     }
@@ -166,12 +218,12 @@ class MainActivity : AppCompatActivity() {
     private fun updateOverlayStatus() {
         val canDraw = Settings.canDrawOverlays(this)
         if (canDraw) {
-            tvOverlayStatus.text = "已授予 ✔"
+            tvOverlayStatus.text = "授權狀態：已授予 ✔"
             tvOverlayStatus.setTextColor(resources.getColor(R.color.accent_green, null))
             btnGrantOverlay.isEnabled = false
             btnGrantOverlay.alpha = 0.4f
         } else {
-            tvOverlayStatus.text = "未授予 ✘"
+            tvOverlayStatus.text = "授權狀態：未授予 ✘ — 拼音將無法顯示於其他應用程式上"
             tvOverlayStatus.setTextColor(resources.getColor(R.color.accent_red, null))
             btnGrantOverlay.isEnabled = true
             btnGrantOverlay.alpha = 1.0f
