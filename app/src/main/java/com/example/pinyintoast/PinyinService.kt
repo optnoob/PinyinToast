@@ -32,6 +32,26 @@ class PinyinService : AccessibilityService() {
     private var hideRunnable: Runnable? = null
     private lateinit var prefs: SharedPreferences
 
+    companion object {
+        /**
+         * Gravity values mapped to position index (matches POSITION_LABELS order in MainActivity):
+         *  0=上方靠左  1=上方置中  2=上方靠右
+         *  3=中間靠左  4=正中央    5=中間靠右
+         *  6=下方靠左  7=下方置中  8=下方靠右
+         */
+        val POSITION_GRAVITY_MAP = intArrayOf(
+            Gravity.TOP or Gravity.START,
+            Gravity.TOP or Gravity.CENTER_HORIZONTAL,
+            Gravity.TOP or Gravity.END,
+            Gravity.CENTER_VERTICAL or Gravity.START,
+            Gravity.CENTER,
+            Gravity.CENTER_VERTICAL or Gravity.END,
+            Gravity.BOTTOM or Gravity.START,
+            Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
+            Gravity.BOTTOM or Gravity.END
+        )
+    }
+
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -129,6 +149,14 @@ class PinyinService : AccessibilityService() {
             setBackgroundColor(Color.argb(210, 30, 30, 30))
         }
 
+        // Read position preferences
+        val positionIndex = prefs.getInt(MainActivity.KEY_POSITION, MainActivity.DEFAULT_POSITION)
+        val yOffsetDp = prefs.getInt(MainActivity.KEY_Y_OFFSET, MainActivity.DEFAULT_Y_OFFSET)
+        val gravityValue = POSITION_GRAVITY_MAP.getOrElse(positionIndex) {
+            Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+        }
+        val yOffsetPx = (yOffsetDp * resources.displayMetrics.density).toInt()
+
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -138,9 +166,8 @@ class PinyinService : AccessibilityService() {
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            // 300 dp → always clears the soft keyboard regardless of screen density
-            y = (300 * resources.displayMetrics.density).toInt()
+            gravity = gravityValue
+            y = yOffsetPx
         }
 
         try {

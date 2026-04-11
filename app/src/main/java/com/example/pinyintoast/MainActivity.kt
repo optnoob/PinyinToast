@@ -10,10 +10,13 @@ import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.SeekBar
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +39,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var seekbarMaxDuration: SeekBar
     private lateinit var tvMaxDurationValue: TextView
 
+    // Position settings
+    private lateinit var spinnerPosition: Spinner
+    private lateinit var seekbarYOffset: SeekBar
+    private lateinit var tvYOffsetValue: TextView
+
     private lateinit var prefs: SharedPreferences
 
     companion object {
@@ -44,10 +52,21 @@ class MainActivity : AppCompatActivity() {
         const val KEY_PER_CHAR_ENABLED = "per_char_enabled"
         const val KEY_PER_CHAR_MS = "per_char_ms"
         const val KEY_MAX_DURATION = "max_duration"
+        const val KEY_POSITION = "position"
+        const val KEY_Y_OFFSET = "y_offset"
 
         const val DEFAULT_BASE_DURATION = 2000
         const val DEFAULT_PER_CHAR_MS = 500
         const val DEFAULT_MAX_DURATION = 2000
+        const val DEFAULT_POSITION = 7  // index 7 = 下方置中 (bottom-center)
+        const val DEFAULT_Y_OFFSET = 300
+
+        // Position labels — order must match POSITION_GRAVITY_MAP in PinyinService
+        val POSITION_LABELS = arrayOf(
+            "上方靠左", "上方置中", "上方靠右",
+            "中間靠左", "正中央",   "中間靠右",
+            "下方靠左", "下方置中", "下方靠右"
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +95,11 @@ class MainActivity : AppCompatActivity() {
         seekbarMaxDuration = findViewById(R.id.seekbar_max_duration)
         tvMaxDurationValue = findViewById(R.id.tv_max_duration_value)
 
+        // Position settings
+        spinnerPosition = findViewById(R.id.spinner_position)
+        seekbarYOffset = findViewById(R.id.seekbar_y_offset)
+        tvYOffsetValue = findViewById(R.id.tv_y_offset_value)
+
         // --- Status buttons ---
         btnEnableService.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -94,6 +118,8 @@ class MainActivity : AppCompatActivity() {
         val savedPerCharEnabled = prefs.getBoolean(KEY_PER_CHAR_ENABLED, false)
         val savedPerChar = prefs.getInt(KEY_PER_CHAR_MS, DEFAULT_PER_CHAR_MS)
         val savedMax = prefs.getInt(KEY_MAX_DURATION, DEFAULT_MAX_DURATION)
+        val savedPosition = prefs.getInt(KEY_POSITION, DEFAULT_POSITION)
+        val savedYOffset = prefs.getInt(KEY_Y_OFFSET, DEFAULT_Y_OFFSET)
 
         seekbarBaseDuration.progress = savedBase
         tvBaseDurationValue.text = "$savedBase ms"
@@ -106,6 +132,21 @@ class MainActivity : AppCompatActivity() {
 
         seekbarMaxDuration.progress = savedMax
         tvMaxDurationValue.text = "$savedMax ms"
+
+        seekbarYOffset.progress = savedYOffset
+        tvYOffsetValue.text = "$savedYOffset dp"
+
+        // --- Position spinner ---
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, POSITION_LABELS)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerPosition.adapter = adapter
+        spinnerPosition.setSelection(savedPosition)
+        spinnerPosition.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                prefs.edit().putInt(KEY_POSITION, position).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         // --- Listeners ---
         seekbarBaseDuration.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -149,6 +190,19 @@ class MainActivity : AppCompatActivity() {
                 val snapped = ((seekBar?.progress ?: DEFAULT_MAX_DURATION) / 100) * 100
                 seekBar?.progress = snapped
                 prefs.edit().putInt(KEY_MAX_DURATION, snapped).apply()
+            }
+        })
+
+        seekbarYOffset.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val snapped = (progress / 10) * 10
+                tvYOffsetValue.text = "$snapped dp"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                val snapped = ((seekBar?.progress ?: DEFAULT_Y_OFFSET) / 10) * 10
+                seekBar?.progress = snapped
+                prefs.edit().putInt(KEY_Y_OFFSET, snapped).apply()
             }
         })
     }
