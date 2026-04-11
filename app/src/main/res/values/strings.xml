@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pinyin Toast</string>
+    <string name="accessibility_service_description">This service monitors text typed anywhere on the device and displays the Pinyin for any typed Chinese characters.</string>
+    <string name="enable_service_btn">Enable Pinyin Service in Settings</string>
+    <string name="service_status_enabled">Status: Enabled</string>
+    <string name="service_status_disabled">Status: Disabled</string>
+</resources>
