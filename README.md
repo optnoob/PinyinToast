@@ -28,7 +28,11 @@ PinyinToast 是一個 Android 無障礙小工具，能在輸入漢字時即時�
 
 ## 📱 螢幕截圖
 
-> *(即將加入)*
+<div align="center">
+  <img src="image/screenshot_demo0.jpg" alt="Demo 1" width="30%" />
+  <img src="image/screenshot_demo1.jpg" alt="Demo 2" width="30%" />
+  <img src="image/screenshot_demo2.jpg" alt="Demo 3" width="30%" />
+</div>
 
 ---
 
