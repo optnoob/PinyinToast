@@ -60,11 +60,11 @@ class PinyinService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
-        Log.d("PinyinToast", "Event type: ${event.eventType}")
+//        Log.d("PinyinToast", "Event type: ${event.eventType}")
 
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
             val addedCount = event.addedCount
-            Log.d("PinyinToast", "TYPE_VIEW_TEXT_CHANGED text: ${event.text}")
+//            Log.d("PinyinToast", "TYPE_VIEW_TEXT_CHANGED text: ${event.text}")
 
             if (addedCount > 0 && event.text != null && event.text.isNotEmpty()) {
                 val fullText = event.text.joinToString("")
@@ -100,7 +100,7 @@ class PinyinService : AccessibilityService() {
 
         if (hasChinese && result.isNotEmpty()) {
             val toastMessage = result.toString().trim()
-            Log.d("PinyinToast", "overlay sent: $toastMessage")
+//            Log.d("PinyinToast", "overlay sent: $toastMessage")
             val duration = calculateDuration(chineseCharCount)
             mainHandler.post { showOverlay(toastMessage, duration) }
         }
