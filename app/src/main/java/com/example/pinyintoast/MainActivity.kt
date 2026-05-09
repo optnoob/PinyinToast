@@ -274,8 +274,8 @@ class MainActivity : AppCompatActivity() {
         if (canDraw) {
             tvOverlayStatus.text = "授權狀態：已授予 ✔"
             tvOverlayStatus.setTextColor(resources.getColor(R.color.accent_green, null))
-            btnGrantOverlay.isEnabled = false
-            btnGrantOverlay.alpha = 0.4f
+            btnGrantOverlay.isEnabled = true
+            btnGrantOverlay.alpha = 1.0f
         } else {
             tvOverlayStatus.text = "授權狀態：未授予 ✘ — 拼音將無法顯示於其他應用程式上"
             tvOverlayStatus.setTextColor(resources.getColor(R.color.accent_red, null))
