@@ -6,7 +6,9 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -14,6 +16,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Spinner
@@ -38,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvPerCharValue: TextView
     private lateinit var seekbarMaxDuration: SeekBar
     private lateinit var tvMaxDurationValue: TextView
+    private lateinit var etMaxCharCount: EditText
+    private lateinit var btnMaxCharMinus: Button
+    private lateinit var btnMaxCharPlus: Button
 
     // Position settings
     private lateinit var spinnerPosition: Spinner
@@ -52,12 +58,14 @@ class MainActivity : AppCompatActivity() {
         const val KEY_PER_CHAR_ENABLED = "per_char_enabled"
         const val KEY_PER_CHAR_MS = "per_char_ms"
         const val KEY_MAX_DURATION = "max_duration"
+        const val KEY_MAX_CHAR_COUNT = "max_char_count"
         const val KEY_POSITION = "position"
         const val KEY_Y_OFFSET = "y_offset"
 
         const val DEFAULT_BASE_DURATION = 2000
         const val DEFAULT_PER_CHAR_MS = 500
         const val DEFAULT_MAX_DURATION = 2000
+        const val DEFAULT_MAX_CHAR_COUNT = 10
         const val DEFAULT_POSITION = 7  // index 7 = 下方置中 (bottom-center)
         const val DEFAULT_Y_OFFSET = 300
 
@@ -94,6 +102,9 @@ class MainActivity : AppCompatActivity() {
         tvPerCharValue = findViewById(R.id.tv_per_char_value)
         seekbarMaxDuration = findViewById(R.id.seekbar_max_duration)
         tvMaxDurationValue = findViewById(R.id.tv_max_duration_value)
+        etMaxCharCount = findViewById(R.id.et_max_char_count)
+        btnMaxCharMinus = findViewById(R.id.btn_max_char_minus)
+        btnMaxCharPlus = findViewById(R.id.btn_max_char_plus)
 
         // Position settings
         spinnerPosition = findViewById(R.id.spinner_position)
@@ -118,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         val savedPerCharEnabled = prefs.getBoolean(KEY_PER_CHAR_ENABLED, false)
         val savedPerChar = prefs.getInt(KEY_PER_CHAR_MS, DEFAULT_PER_CHAR_MS)
         val savedMax = prefs.getInt(KEY_MAX_DURATION, DEFAULT_MAX_DURATION)
+        val savedMaxCharCount = prefs.getInt(KEY_MAX_CHAR_COUNT, DEFAULT_MAX_CHAR_COUNT)
         val savedPosition = prefs.getInt(KEY_POSITION, DEFAULT_POSITION)
         val savedYOffset = prefs.getInt(KEY_Y_OFFSET, DEFAULT_Y_OFFSET)
 
@@ -132,6 +144,8 @@ class MainActivity : AppCompatActivity() {
 
         seekbarMaxDuration.progress = savedMax
         tvMaxDurationValue.text = "$savedMax ms"
+
+        etMaxCharCount.setText(savedMaxCharCount.toString())
 
         seekbarYOffset.progress = savedYOffset
         tvYOffsetValue.text = "$savedYOffset dp"
@@ -192,6 +206,43 @@ class MainActivity : AppCompatActivity() {
                 prefs.edit().putInt(KEY_MAX_DURATION, snapped).apply()
             }
         })
+
+        btnMaxCharMinus.setOnClickListener {
+            val current = etMaxCharCount.text.toString().toIntOrNull()
+                ?: prefs.getInt(KEY_MAX_CHAR_COUNT, DEFAULT_MAX_CHAR_COUNT)
+            val next = (current - 1).coerceAtLeast(1)
+            etMaxCharCount.setText(next.toString())
+            etMaxCharCount.setSelection(etMaxCharCount.text.length)
+        }
+
+        btnMaxCharPlus.setOnClickListener {
+            val current = etMaxCharCount.text.toString().toIntOrNull()
+                ?: prefs.getInt(KEY_MAX_CHAR_COUNT, DEFAULT_MAX_CHAR_COUNT)
+            val next = (current + 1).coerceAtMost(999)
+            etMaxCharCount.setText(next.toString())
+            etMaxCharCount.setSelection(etMaxCharCount.text.length)
+        }
+
+        etMaxCharCount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val parsed = s?.toString()?.toIntOrNull()
+                if (parsed != null && parsed >= 1) {
+                    prefs.edit().putInt(KEY_MAX_CHAR_COUNT, parsed).apply()
+                }
+            }
+        })
+
+        etMaxCharCount.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val parsed = etMaxCharCount.text.toString().toIntOrNull()
+                if (parsed == null || parsed < 1) {
+                    val fallback = prefs.getInt(KEY_MAX_CHAR_COUNT, DEFAULT_MAX_CHAR_COUNT).coerceAtLeast(1)
+                    etMaxCharCount.setText(fallback.toString())
+                }
+            }
+        }
 
         seekbarYOffset.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

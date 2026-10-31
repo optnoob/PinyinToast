@@ -380,6 +380,81 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp" />
 
+            <!-- 單次最高中文字數 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="單次最高中文字數"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/btn_max_char_minus"
+                        style="@style/Widget.AppCompat.Button.Small"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="−"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/et_max_char_count"
+                        android:layout_width="56dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="3"
+                        android:text="10"
+                        android:textSize="15sp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp" />
+
+                    <Button
+                        android:id="@+id/btn_max_char_plus"
+                        style="@style/Widget.AppCompat.Button.Small"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="+"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="單次輸入若超過此字數則不顯示 Toast（避免部分 App 輸入時重複送出長篇段落）"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp" />
+
             <!-- 顯示位置 -->
             <LinearLayout
                 android:layout_width="match_parent"

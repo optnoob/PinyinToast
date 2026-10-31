@@ -79,14 +79,25 @@ class PinyinService : AccessibilityService() {
     }
 
     private fun handleNewText(newText: String) {
-        val result = StringBuilder()
-        var hasChinese = false
-        var chineseCharCount = 0
+        val maxCharCount = prefs.getInt(MainActivity.KEY_MAX_CHAR_COUNT, MainActivity.DEFAULT_MAX_CHAR_COUNT)
 
+        // Count Chinese characters first.
+        // If it exceeds the maximum supported limit, do not display the toast at all (prevents spam from apps that re-send entire paragraphs).
+        var chineseCharCount = 0
         for (char in newText) {
-            if (char.toString().matches(Regex("[\\u4e00-\\u9fa5]"))) {
-                hasChinese = true
+            if (char in '\u4e00'..'\u9fa5') {
                 chineseCharCount++
+                if (chineseCharCount > maxCharCount) {
+                    return
+                }
+            }
+        }
+
+        if (chineseCharCount == 0) return
+
+        val result = StringBuilder()
+        for (char in newText) {
+            if (char in '\u4e00'..'\u9fa5') {
                 try {
                     val pinyinArray = PinyinHelper.toHanyuPinyinStringArray(char, pinyinFormat)
                     if (pinyinArray != null && pinyinArray.isNotEmpty()) {
@@ -98,7 +109,7 @@ class PinyinService : AccessibilityService() {
             }
         }
 
-        if (hasChinese && result.isNotEmpty()) {
+        if (result.isNotEmpty()) {
             val toastMessage = result.toString().trim()
 //            Log.d("PinyinToast", "overlay sent: $toastMessage")
             val duration = calculateDuration(chineseCharCount)
